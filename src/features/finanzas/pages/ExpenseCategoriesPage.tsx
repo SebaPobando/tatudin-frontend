@@ -1,0 +1,249 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Link } from 'react-router';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { getApiErrorMessage } from '@/api/errors';
+import { cn } from '@/lib/utils';
+import type { ExpenseCategory } from '@/types/api';
+import {
+  useCreateExpenseCategory,
+  useDeleteExpenseCategory,
+  useExpenseCategories,
+  useUpdateExpenseCategory,
+} from '../hooks';
+
+const categorySchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido.'),
+  color: z.string(),
+});
+type CategoryValues = z.infer<typeof categorySchema>;
+
+function CategoryForm({
+  defaultValues,
+  submitLabel,
+  pending,
+  onSubmit,
+  onCancel,
+}: {
+  defaultValues?: CategoryValues;
+  submitLabel: string;
+  pending: boolean;
+  onSubmit: (values: CategoryValues) => void;
+  onCancel: () => void;
+}) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CategoryValues>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: defaultValues ?? { name: '', color: '#6366f1' },
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3" noValidate>
+      <div className="flex items-end gap-3">
+        <div className="flex flex-1 flex-col gap-1.5">
+          <Label htmlFor="cat-name">Nombre</Label>
+          <Input id="cat-name" placeholder="Insumos" {...register('name')} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="cat-color">Color</Label>
+          <input
+            id="cat-color"
+            type="color"
+            className="border-input h-9 w-14 cursor-pointer rounded-md border"
+            {...register('color')}
+          />
+        </div>
+      </div>
+      {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
+      <div className="flex gap-2">
+        <Button type="submit" className="flex-1 rounded-full font-semibold" disabled={pending}>
+          {pending ? 'Guardando…' : submitLabel}
+        </Button>
+        <Button type="button" variant="outline" className="rounded-full" onClick={onCancel}>
+          Cancelar
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function CategoryItem({ category }: { category: ExpenseCategory }) {
+  const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const updateMutation = useUpdateExpenseCategory();
+  const deleteMutation = useDeleteExpenseCategory();
+
+  if (editing) {
+    return (
+      <Card>
+        <CardContent>
+          <CategoryForm
+            defaultValues={{ name: category.name, color: category.color || '#6366f1' }}
+            submitLabel="Guardar"
+            pending={updateMutation.isPending}
+            onSubmit={(values) =>
+              updateMutation.mutate(
+                { id: category.id, ...values },
+                { onSuccess: () => setEditing(false) },
+              )
+            }
+            onCancel={() => setEditing(false)}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className="size-4 shrink-0 rounded-full"
+          style={{ backgroundColor: category.color || '#6366f1' }}
+        />
+        <p
+          className={cn(
+            'min-w-0 flex-1 truncate font-semibold',
+            !category.is_active && 'text-muted-foreground line-through',
+          )}
+        >
+          {category.name}
+        </p>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-full"
+          disabled={updateMutation.isPending}
+          onClick={() => updateMutation.mutate({ id: category.id, is_active: !category.is_active })}
+        >
+          {category.is_active ? 'Desactivar' : 'Activar'}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-full"
+          onClick={() => setEditing(true)}
+        >
+          Editar
+        </Button>
+
+        {confirmingDelete ? (
+          <div className="flex gap-1">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="rounded-full"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteMutation.mutate(category.id)}
+            >
+              Sí, borrar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onClick={() => setConfirmingDelete(false)}
+            >
+              No
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Eliminar ${category.name}`}
+            className="text-destructive rounded-full"
+            onClick={() => setConfirmingDelete(true)}
+          >
+            <Trash2 />
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function ExpenseCategoriesPage() {
+  const categories = useExpenseCategories();
+  const createMutation = useCreateExpenseCategory();
+  const [creating, setCreating] = useState(false);
+
+  return (
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-5 p-6">
+      <header className="flex items-center gap-3">
+        <Button variant="outline" size="icon" className="rounded-2xl" asChild>
+          <Link to="/finanzas" aria-label="Volver a finanzas">
+            <ArrowLeft />
+          </Link>
+        </Button>
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold tracking-tight">Categorías de gasto</h2>
+          <p className="text-muted-foreground text-xs">
+            Organizan el P&L — ej. Insumos, Arriendo, Marketing.
+          </p>
+        </div>
+        {!creating && (
+          <Button className="rounded-full font-semibold" onClick={() => setCreating(true)}>
+            <Plus /> Nueva
+          </Button>
+        )}
+      </header>
+
+      {creating && (
+        <Card>
+          <CardContent>
+            <CategoryForm
+              submitLabel="Crear categoría"
+              pending={createMutation.isPending}
+              onSubmit={(values) =>
+                createMutation.mutate(values, { onSuccess: () => setCreating(false) })
+              }
+              onCancel={() => setCreating(false)}
+            />
+            {createMutation.isError && (
+              <p role="alert" className="text-destructive mt-2 text-sm">
+                {getApiErrorMessage(createMutation.error)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {categories.isPending && (
+        <p className="text-muted-foreground text-sm">Cargando categorías…</p>
+      )}
+      {categories.isError && (
+        <p role="alert" className="text-destructive text-sm">
+          {getApiErrorMessage(categories.error)}
+        </p>
+      )}
+      {categories.data?.length === 0 && !creating && (
+        <div className="bg-card rounded-lg border p-8 text-center">
+          <p className="text-muted-foreground text-sm">Sin categorías aún.</p>
+        </div>
+      )}
+
+      <ul className="flex flex-col gap-3">
+        {categories.data
+          ?.slice()
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((c) => (
+            <li key={c.id}>
+              <CategoryItem category={c} />
+            </li>
+          ))}
+      </ul>
+    </main>
+  );
+}
