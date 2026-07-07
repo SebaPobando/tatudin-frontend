@@ -2,6 +2,9 @@ import { createBrowserRouter } from 'react-router';
 import { AppShell } from '@/components/shared/AppShell';
 import { PlaceholderPage } from '@/components/shared/PlaceholderPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { PublicCalendarPage } from '@/features/public/pages/PublicCalendarPage';
+import { PublicFormPage } from '@/features/public/pages/PublicFormPage';
+import { PublicStatsPage } from '@/features/public/pages/PublicStatsPage';
 import { SelectTenantPage } from '@/features/auth/pages/SelectTenantPage';
 import { AgendaPage } from '@/features/agenda/pages/AgendaPage';
 import { AppointmentDetailPage } from '@/features/agenda/pages/AppointmentDetailPage';
@@ -26,11 +29,19 @@ import { FinanzasPage } from '@/features/finanzas/pages/FinanzasPage';
 import { NewPaymentPage } from '@/features/finanzas/pages/NewPaymentPage';
 import { PaymentDetailPage } from '@/features/finanzas/pages/PaymentDetailPage';
 import { MenuPage } from '@/features/dashboard/pages/MenuPage';
+import { FormFieldsPage } from '@/features/forms/pages/FormFieldsPage';
+import { FormsPage } from '@/features/forms/pages/FormsPage';
+import { SubmissionDetailPage } from '@/features/forms/pages/SubmissionDetailPage';
+import { SubmissionsPage } from '@/features/forms/pages/SubmissionsPage';
 import { TeamPage } from '@/features/team/pages/TeamPage';
 import { RequireAuth } from './RequireAuth';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  // Páginas PÚBLICAS: sin RequireAuth, sin AppShell — para compartir/embeber
+  { path: '/f/:tenantSlug/:formSlug', element: <PublicFormPage /> },
+  { path: '/c/:tenantSlug', element: <PublicCalendarPage /> },
+  { path: '/s/:tenantSlug', element: <PublicStatsPage /> },
   {
     // Autenticado pero sin exigir tenant: aquí se elige
     element: <RequireAuth requireTenant={false} />,
@@ -66,7 +77,10 @@ export const router = createBrowserRouter([
           { path: '/clientes/:id', element: <ClientDetailPage /> },
           { path: '/clientes/:id/editar', element: <EditClientPage /> },
           { path: '/catalogo', element: <ServicesPage /> },
-          { path: '/formularios', element: <PlaceholderPage title="Formularios" phase={10} /> },
+          { path: '/formularios', element: <FormsPage /> },
+          { path: '/formularios/entradas', element: <SubmissionsPage /> },
+          { path: '/formularios/entradas/:id', element: <SubmissionDetailPage /> },
+          { path: '/formularios/:id/campos', element: <FormFieldsPage /> },
           { path: '/eventos', element: <PlaceholderPage title="Eventos" phase={12} /> },
           { path: '/equipo', element: <TeamPage /> },
           { path: '/analytics', element: <PlaceholderPage title="Analytics" phase={13} /> },

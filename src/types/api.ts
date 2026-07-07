@@ -360,3 +360,136 @@ export interface AppointmentParticipant {
   created_at: string;
   updated_at: string;
 }
+
+/** Contratos confirmados vía OPTIONS /api/forms/* (2026-07-06). */
+export type FormTemplateType = 'consent' | 'quote' | 'booking' | 'onboarding' | 'custom';
+
+export type FormFieldType =
+  | 'text'
+  | 'textarea'
+  | 'email'
+  | 'phone'
+  | 'number'
+  | 'date'
+  | 'datetime'
+  | 'select'
+  | 'multiselect'
+  | 'checkbox'
+  | 'signature'
+  | 'file_url';
+
+export interface FormField {
+  id: string;
+  field_type: FormFieldType;
+  label: string;
+  help_text: string;
+  placeholder: string;
+  required: boolean;
+  order: number;
+  options: string[] | null;
+  min_length: number | null;
+  max_length: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FormTemplate {
+  id: string;
+  name: string;
+  slug: string;
+  type: FormTemplateType;
+  description: string;
+  instructions: string;
+  is_active: boolean;
+  submit_message: string;
+  fields: FormField[];
+  fields_count: number;
+  submissions_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SubmissionStatus = 'pending' | 'reviewed' | 'converted' | 'archived';
+
+export interface SubmissionAnswer {
+  id: string;
+  field_id: string;
+  field_label: string;
+  field_type: string;
+  value: string;
+}
+
+export interface FormSubmission {
+  id: string;
+  template_id: string;
+  template_name: string;
+  template_type: string;
+  client_id: string | null;
+  client_name: string | null;
+  status: SubmissionStatus;
+  visitor_name: string;
+  visitor_email: string;
+  visitor_phone: string;
+  reviewer_email: string | null;
+  reviewed_at: string | null;
+  reviewer_notes: string;
+  answers: SubmissionAnswer[];
+  submitted_ip: string;
+  submitted_user_agent: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Contratos públicos confirmados contra backend real (2026-07-06). */
+export type PublicFormField = Omit<FormField, 'created_at' | 'updated_at'>;
+
+export interface PublicFormTemplate {
+  id: string;
+  name: string;
+  type: FormTemplateType;
+  description: string;
+  instructions: string;
+  submit_message: string;
+  fields: PublicFormField[];
+}
+
+export interface PublicCalendarDay {
+  date: string;
+  weekday: number; // 0=Lunes (convención weekday() de Python)
+  is_working_day: boolean;
+  has_availability: boolean;
+  available_hours: number;
+}
+
+export interface PublicCalendar {
+  tenant_slug: string;
+  month: string;
+  timezone: string;
+  artist_id: string | null;
+  days: PublicCalendarDay[];
+}
+
+export interface PublicStats {
+  tenant_slug: string;
+  period: string;
+  from: string;
+  to: string;
+  timezone: string;
+  total_working_days: number;
+  total_working_hours: number;
+  total_busy_hours: number;
+  total_available_hours: number;
+  busy_days_count: number;
+  busy_days_percentage: number;
+  total_appointments_count: number;
+  active_artists_count: number;
+}
+
+export interface PublicAvailability {
+  tenant_slug: string;
+  artist_id: string;
+  date: string;
+  timezone: string;
+  /** Shape interno por confirmar (siempre lo hemos visto vacío). */
+  ranges: unknown[];
+}
