@@ -12,7 +12,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      // Los iconos se agregan en la fase de PWA (Fase 14) con el branding final
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'TATUDIN',
         short_name: 'Tatudin',
@@ -20,7 +20,26 @@ export default defineConfig({
         theme_color: '#1a1625',
         background_color: '#f7f5fb',
         display: 'standalone',
+        orientation: 'portrait',
         lang: 'es',
+        start_url: '/',
+        scope: '/',
+        icons: [
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: 'pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        // El SW cachea el app-shell; la navegacion a /api NO se intercepta
+        // (la data siempre va fresca via TanStack Query, sin cache offline).
+        navigateFallbackDenylist: [/^\/api/],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       },
     }),
   ],

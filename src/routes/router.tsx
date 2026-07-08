@@ -18,6 +18,10 @@ import { NewProjectPage } from '@/features/agenda/pages/NewProjectPage';
 import { ProjectDetailPage } from '@/features/agenda/pages/ProjectDetailPage';
 import { ProjectsPage } from '@/features/agenda/pages/ProjectsPage';
 import { ServicesPage } from '@/features/catalog/pages/ServicesPage';
+import { EventsPage } from '@/features/eventos/pages/EventsPage';
+import { EventDetailPage } from '@/features/eventos/pages/EventDetailPage';
+import { AnalyticsPage } from '@/features/analytics/pages/AnalyticsPage';
+import { IntegrationsPage } from '@/features/integrations/pages/IntegrationsPage';
 import { ClientDetailPage } from '@/features/clients/pages/ClientDetailPage';
 import { ClientsPage } from '@/features/clients/pages/ClientsPage';
 import { EditClientPage } from '@/features/clients/pages/EditClientPage';
@@ -81,10 +85,11 @@ export const router = createBrowserRouter([
           { path: '/formularios/entradas', element: <SubmissionsPage /> },
           { path: '/formularios/entradas/:id', element: <SubmissionDetailPage /> },
           { path: '/formularios/:id/campos', element: <FormFieldsPage /> },
-          { path: '/eventos', element: <PlaceholderPage title="Eventos" phase={12} /> },
+          { path: '/eventos', element: <EventsPage /> },
+          { path: '/eventos/:id', element: <EventDetailPage /> },
           { path: '/equipo', element: <TeamPage /> },
-          { path: '/analytics', element: <PlaceholderPage title="Analytics" phase={13} /> },
-          { path: '/integraciones', element: <PlaceholderPage title="Integraciones" phase={13} /> },
+          { path: '/analytics', element: <AnalyticsPage /> },
+          { path: '/integraciones', element: <IntegrationsPage /> },
           { path: '/ajustes', element: <PlaceholderPage title="Ajustes" phase={14} /> },
         ],
       },

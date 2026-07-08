@@ -39,3 +39,20 @@ export function getApiErrorMessage(error: unknown): string {
 
   return `Error ${error.response.status} del servidor.`;
 }
+
+/**
+ * Extrae el X-Request-ID de un error para correlación con los logs del backend.
+ * Lo busca en el header `x-request-id` (presente en TODA respuesta de error) y,
+ * como respaldo, en el body de los 500 (`request_id`). Devuelve null si no hay.
+ */
+export function getRequestId(error: unknown): string | null {
+  if (!isAxiosError(error) || !error.response) return null;
+  const header = error.response.headers?.['x-request-id'];
+  if (typeof header === 'string' && header) return header;
+  const data: unknown = error.response.data;
+  if (data && typeof data === 'object') {
+    const id = (data as Record<string, unknown>).request_id;
+    if (typeof id === 'string' && id) return id;
+  }
+  return null;
+}

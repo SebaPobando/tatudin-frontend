@@ -493,3 +493,124 @@ export interface PublicAvailability {
   /** Shape interno por confirmar (siempre lo hemos visto vacío). */
   ranges: unknown[];
 }
+
+// ── Eventos (Fase 12) ────────────────────────────────────────────
+// Reconstruido tras reversión de OneDrive del mount (2026-07-07).
+export type EventStatus = 'draft' | 'published' | 'in_progress' | 'completed' | 'canceled';
+
+export interface Event {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  start_at: string;
+  end_at: string;
+  status: EventStatus;
+  artists_count?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventArtist {
+  id: string;
+  user_id: string;
+  user_email: string;
+  user_full_name: string;
+  commission_percentage: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Analytics (Fase 13a) ─────────────────────────────────────────
+export type AnalyticsPeriod = 'week' | 'month' | 'year';
+
+export interface AnalyticsEnvelope {
+  tenant_slug: string;
+  period: AnalyticsPeriod;
+  from: string;
+  to: string;
+  timezone: string;
+}
+
+export interface ArtistStat {
+  artist_id: string;
+  artist_email: string;
+  appointments_count: number;
+  completed_count: number;
+  canceled_count: number;
+  no_show_count: number;
+  completion_rate: number;
+  total_hours_worked: number;
+  average_duration_hours: number;
+}
+
+export interface AnalyticsByArtist {
+  tenant_slug: string;
+  period: AnalyticsPeriod;
+  from: string;
+  to: string;
+  artists: ArtistStat[];
+}
+
+export interface DayStat {
+  weekday: number;
+  day_name: string;
+  appointments_count: number;
+  completed_count: number;
+  canceled_count: number;
+}
+
+export interface AnalyticsByDayOfWeek extends AnalyticsEnvelope {
+  days: DayStat[];
+}
+
+export interface FunnelOverall {
+  submissions_total: number;
+  pending_count: number;
+  reviewed_count: number;
+  converted_count: number;
+  archived_count: number;
+  conversion_rate: number;
+}
+
+export interface AnalyticsFunnel {
+  tenant_slug: string;
+  period: AnalyticsPeriod;
+  from: string;
+  to: string;
+  overall: FunnelOverall;
+  by_template: unknown[];
+}
+
+// ── Integraciones (Fase 13b) ─────────────────────────────────────
+export type IntegrationProvider =
+  | 'google_calendar'
+  | 'whatsapp_twilio'
+  | 'whatsapp_meta'
+  | 'google_reviews';
+
+export type ConnectionStatus = 'inactive' | 'active' | 'error';
+
+export interface IntegrationConnection {
+  id: string;
+  provider: IntegrationProvider;
+  status: ConnectionStatus;
+  config: Record<string, unknown>;
+  has_secret: boolean;
+  last_used_at: string | null;
+  last_error: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotificationOutbox {
+  id: string;
+  status?: string;
+  event_type?: string;
+  recipient?: string;
+  retry_count?: number;
+  last_error?: string;
+  created_at?: string;
+  [key: string]: unknown;
+}
